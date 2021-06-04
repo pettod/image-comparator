@@ -24,7 +24,7 @@ Import following function:
 from imco import compareImages
 ```
 
-Here is a test code sample to use the comparison function:
+Here is a sample code to use the comparison function:
 
 ```python
 import cv2
