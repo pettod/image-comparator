@@ -1,1 +1,4 @@
 *.png
+*.pyc
+*.egg*
+build/*
