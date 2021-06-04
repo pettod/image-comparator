@@ -18,7 +18,17 @@ pip install git+https://github.com/pettod/imco.git@main
 
 ## Usage
 
+Import following function:
+
 ```python
+from imco import compareImages
+```
+
+Here is a test code sample to use the comparison function:
+
+```python
+import cv2
+
 # Paths to images
 image_paths = [
     "path/to/image_1.png",
@@ -27,16 +37,17 @@ image_paths = [
 ]
 reference_image_path = "path/to/reference_image.png"
 
-# Read images and define names
+# Read images
 images = [cv2.imread(image_path) for image_path in image_paths]
 reference_image = cv2.imread(reference_image_path)
+
+# Define image names
 names = ["Input", "Prediction 1", "Prediction 2", "Ground Truth"]
 
 # Create comparison image
 comparison_image = compareImages(images, reference_image, names, crop_size=256)
 cv2.imwrite("comparison_image.png", comparison_image)
 ```
-
 
 ## License
 
