@@ -5,14 +5,40 @@ from skimage.metrics import structural_similarity as ssim
 
 
 def compareImages(
-        compared_images, reference_image, image_names=None, metrics=None,
-        crop_size=None, font_size=1, font_stoke=3, first_line_y=40,
-        text_spacing=40, text_x_coordinate=10, white_box_height=140):
-    """
+        compared_images, reference_image, image_names=None, crop_size=None,
+        font_size=1, font_stoke=3, first_line_y=40, text_spacing=40,
+        text_x_coordinate=10, white_box_height=140):
+    """Compare list of images to one image
+
+    Concatenate images into single image with added similarity metrics printed
+    below each comparison image.
+
     Arguments
     ---------
+    compared_images : list of numpy arrays
+        List including images which are compared to the reference image
+    reference_image : numpy array
+        Image which is compared to all comparison images
+    image_names : list of strings
+        List of names for each comparison image and reference image
+    crop_size : int
+        If defined, all images will be center cropped with this size
+    font_size : int
+        Text font size
+    font_stoke : int
+        Text width
+    first_line_y : int
+        Text y-coordinate in the first line
+    text_spacing : int
+        Text row height
+    text_x_coordinate : int
+        Text x-coordinate in each row
+    white_box_height : int
+        Height in pixels of each white box added below the images
+
     Return
     ------
+    Numpy array of concatenated comparison image with similarity metrics
     """
     def centerCrop(image):
         center = np.divide(list(image.shape), 2)
@@ -38,18 +64,17 @@ def compareImages(
     texts = []
     if image_names:
         texts.append(image_names)
-    if metrics is None:
-        texts += [
-            [
-                "PSNR: {0:.2f}dB".format(psnr(image, reference_image))
-                for image in compared_images
-            ],
-            [
-                "SSIM: {0:.2f}".format(
-                    ssim(image, reference_image, multichannel=True))
-                for image in compared_images
-            ],
-        ]
+    texts += [
+        [
+            "PSNR: {0:.2f}dB".format(psnr(image, reference_image))
+            for image in compared_images
+        ],
+        [
+            "SSIM: {0:.2f}".format(
+                ssim(image, reference_image, multichannel=True))
+            for image in compared_images
+        ],
+    ]
 
     # Add text to images
     for i, image in enumerate(compared_images):
