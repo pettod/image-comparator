@@ -5,7 +5,7 @@ from skimage.metrics import structural_similarity as ssim
 
 
 def compareImages(
-        compared_images, reference_image, image_names=None, crop_size=None,
+        images, image_names=None, compute_metrics=True, crop_size=None,
         font_size=1, font_stoke=3, first_text_line_y=40, text_spacing=40,
         text_x_coordinate=10, white_box_height=140):
     """Compare list of images to one image
@@ -15,12 +15,13 @@ def compareImages(
 
     Arguments
     ---------
-    compared_images : list of numpy arrays
+    images : list of numpy arrays
         List including images which are compared to the reference image
-    reference_image : numpy array
-        Image which is compared to all comparison images
     image_names : list of strings
         List of names for each comparison image and reference image
+    compute_metrics : bool
+        If True, all images are compared to the last image. If False, no
+        comparison or metrics computed.
     crop_size : int
         If defined, all images will be center cropped with this size
     font_size : int
@@ -54,59 +55,54 @@ def compareImages(
         return np.ones(shape) * 255
 
     # Crop images
-    if type(compared_images) == np.array:
-        compared_images = [compared_images]
+    if type(images) == np.array:
+        images = [images]
     if crop_size:
-        compared_images = [centerCrop(image) for image in compared_images]
-        reference_image = centerCrop(reference_image)
+        images = [centerCrop(image) for image in images]
 
     # Define texts
     texts = []
     if image_names:
         texts.append(image_names)
-    texts += [
-        [
-            "PSNR: {0:.2f}dB".format(psnr(image, reference_image))
-            for image in compared_images
-        ],
-        [
-            "SSIM: {0:.2f}".format(
-                ssim(image, reference_image, multichannel=True))
-            for image in compared_images
-        ],
-    ]
+    if compute_metrics:
+        texts += [
+            [
+                "PSNR: {0:.2f}dB".format(
+                    psnr(images[i], images[-1]))
+                    for i in range(len(images) - 1)
+            ],
+            [
+                "SSIM: {0:.2f}".format(
+                    ssim(images[i], images[-1], multichannel=True))
+                    for i in range(len(images) - 1)
+            ],
+        ]
 
     # Add text to images
-    for i, image in enumerate(compared_images):
+    for i, image in enumerate(images):
         white_area = getWhiteBox(image)
         for j, text_list in enumerate(texts):
+            if i >= len(text_list):
+                break
             position = (text_x_coordinate, first_text_line_y + j*text_spacing)
             white_area = addText(white_area, text_list[i], position)
-        compared_images[i] = np.concatenate([image, white_area], axis=0)
-    if len(image_names) > len(compared_images):
-        white_area = getWhiteBox(reference_image)
-        position = (text_x_coordinate, first_text_line_y)
-        white_area = addText(white_area, image_names[-1], position)
-        reference_image = np.concatenate([reference_image, white_area], axis=0)
-    return np.concatenate(compared_images + [reference_image], axis=1)
+        images[i] = np.concatenate([image, white_area], axis=0)
+    return np.concatenate(images, axis=1)
 
 
 if __name__ == "__main__":
     # Paths
     image_paths = [
-        "../REDS/train_blur/001/00000000.png",
-        "../REDS/train_sharp/001/00000000.png",
-        "../REDS/train_sharp/001/00000000.png",
+        "../input/REDS/train_blur/001/00000000.png",
+        "../input/REDS/train_sharp/001/00000000.png",
+        "../input/REDS/train_sharp/001/00000000.png",
     ]
-    reference_image_path = "../REDS/train_sharp/001/00000000.png"
 
     # Images and names
     images = [cv2.imread(image_path) for image_path in image_paths]
     images[2] = (images[2]**0.5 * 4).astype(np.uint8)
-    reference_image = cv2.imread(reference_image_path)
-    names = ["Input", "Prediction 1", "Prediction 2", "Ground Truth"]
+    names = ["Input", "Prediction 1", "Ground Truth"]
 
     # Create comparison image
-    comparison_image = compareImages(
-        images, reference_image, names, crop_size=256)
+    comparison_image = compareImages(images, names, True, crop_size=256)
     cv2.imwrite("comparison_image.png", comparison_image)
