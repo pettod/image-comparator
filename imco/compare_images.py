@@ -6,8 +6,8 @@ from skimage.metrics import structural_similarity as ssim
 
 def compareImages(
         images, image_names=None, compute_metrics=True, crop_size=None,
-        font_size=1, font_stoke=3, first_text_line_y=40, text_spacing=40,
-        text_x_coordinate=10, white_box_height=140):
+        crop_coordinates=None, font_size=1, font_stoke=3, first_text_line_y=40,
+        text_spacing=40, text_x_coordinate=10, white_box_height=140):
     """Compare list of images to one image
 
     Concatenate images into single image with added similarity metrics printed
@@ -24,6 +24,8 @@ def compareImages(
         comparison or metrics computed.
     crop_size : int
         If defined, all images will be center cropped with this size
+    crop_coordinates : tuple or None
+        (x, y) coordinates of top left coordinate. If None, crop from center.
     font_size : int
         Text font size
     font_stoke : int
@@ -46,6 +48,9 @@ def compareImages(
         x = center[1] - crop_size / 2
         y = center[0] - crop_size / 2
         return image[int(y):int(y + crop_size), int(x):int(x + crop_size)]
+    def crop(image):
+        (x, y) = crop_coordinates
+        return image[int(y):int(y + crop_size), int(x):int(x + crop_size)]
     def addText(image, text, position):
         return cv2.putText(
             image, text, position, cv2.FONT_HERSHEY_SIMPLEX, font_size,
@@ -61,7 +66,10 @@ def compareImages(
     if type(images) == np.array:
         images = [images]
     if crop_size:
-        images = [centerCrop(image) for image in images]
+        if crop_coordinates is not None:
+            images = [crop(image) for image in images]
+        else:
+            images = [centerCrop(image) for image in images]
 
     # Define texts
     texts = []
@@ -107,5 +115,5 @@ if __name__ == "__main__":
     names = ["Input", "Prediction 1", "Ground Truth"]
 
     # Create comparison image
-    comparison_image = compareImages(images, names, True, crop_size=256)
+    comparison_image = compareImages(images, names, True, 256, (10, 30))
     cv2.imwrite("comparison_image.png", comparison_image)
