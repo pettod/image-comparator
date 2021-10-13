@@ -6,7 +6,7 @@ from skimage.metrics import structural_similarity as ssim
 
 def compareImages(
         compared_images, reference_image, image_names=None, crop_size=None,
-        font_size=1, font_stoke=3, first_line_y=40, text_spacing=40,
+        font_size=1, font_stoke=3, first_text_line_y=40, text_spacing=40,
         text_x_coordinate=10, white_box_height=140):
     """Compare list of images to one image
 
@@ -27,7 +27,7 @@ def compareImages(
         Text font size
     font_stoke : int
         Text width
-    first_line_y : int
+    first_text_line_y : int
         Text y-coordinate in the first line
     text_spacing : int
         Text row height
@@ -80,12 +80,12 @@ def compareImages(
     for i, image in enumerate(compared_images):
         white_area = getWhiteBox(image)
         for j, text_list in enumerate(texts):
-            position = (text_x_coordinate, first_line_y + j*text_spacing)
+            position = (text_x_coordinate, first_text_line_y + j*text_spacing)
             white_area = addText(white_area, text_list[i], position)
         compared_images[i] = np.concatenate([image, white_area], axis=0)
     if len(image_names) > len(compared_images):
         white_area = getWhiteBox(reference_image)
-        position = (text_x_coordinate, first_line_y)
+        position = (text_x_coordinate, first_text_line_y)
         white_area = addText(white_area, image_names[-1], position)
         reference_image = np.concatenate([reference_image, white_area], axis=0)
     return np.concatenate(compared_images + [reference_image], axis=1)
