@@ -54,6 +54,9 @@ def compareImages(
         shape = tuple([white_box_height] + list(image.shape[1:]))
         return np.ones(shape) * 255
 
+    # Add unknown names
+    image_names += ["" for i in range(len(images) - len(image_names))]
+
     # Crop images
     if type(images) == np.array:
         images = [images]
