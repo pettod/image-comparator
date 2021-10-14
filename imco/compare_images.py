@@ -62,6 +62,13 @@ def compareImages(
     # Add unknown names
     image_names += ["" for i in range(len(images) - len(image_names))]
 
+    # Upsample input if not same resolution (super resolution)
+    if images[0].shape != images[-1].shape:
+        images[0] = cv2.resize(
+            images[0], images[-1].shape[:2][::-1],
+            interpolation=cv2.INTER_CUBIC)
+        names[0] += " Bicubic"
+
     # Crop images
     if type(images) == np.array:
         images = [images]
@@ -111,7 +118,7 @@ if __name__ == "__main__":
 
     # Images and names
     images = [cv2.imread(image_path) for image_path in image_paths]
-    images[2] = (images[2]**0.5 * 4).astype(np.uint8)
+    images[1] = (images[2]**0.5 * 4).astype(np.uint8)
     names = ["Input", "Prediction 1", "Ground Truth"]
 
     # Create comparison image

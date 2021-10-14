@@ -35,17 +35,15 @@ image_paths = [
     "path/to/image_2.png",
     "path/to/image_3.png",
 ]
-reference_image_path = "path/to/reference_image.png"
 
 # Read images
 images = [cv2.imread(image_path) for image_path in image_paths]
-reference_image = cv2.imread(reference_image_path)
 
 # Define image names
-names = ["Input", "Prediction 1", "Prediction 2", "Ground Truth"]
+names = ["Input", "Prediction 1", "Ground Truth"]
 
 # Create comparison image
-comparison_image = compareImages(images, reference_image, names, crop_size=256)
+comparison_image = compareImages(images, names, True, 256, (10, 30))
 cv2.imwrite("comparison_image.png", comparison_image)
 ```
 
